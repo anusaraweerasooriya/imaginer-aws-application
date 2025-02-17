@@ -75,6 +75,15 @@ jobs:
           EOF
           )
 
+      - name: Wait for Environment to be Ready
+        run: |
+          STATUS=$(aws elasticbeanstalk describe-environments --application-name $ELASTIC_BEANSTALK_APPLICATION --environment-names $ELASTIC_BEANSTALK_ENVIRONMENT --query 'Environments[0].Status' --output text)
+          while [ "$STATUS" != "Ready" ]; do
+            echo "Waiting for environment to be Ready. Current status: $STATUS"
+            sleep 30
+            STATUS=$(aws elasticbeanstalk describe-environments --application-name $ELASTIC_BEANSTALK_APPLICATION --environment-names $ELASTIC_BEANSTALK_ENVIRONMENT --query 'Environments[0].Status' --output text)
+          done
+
       - name: Deploy to AWS Elastic Beanstalk
         run: |
           eb deploy $ELASTIC_BEANSTALK_ENVIRONMENT --timeout 30
