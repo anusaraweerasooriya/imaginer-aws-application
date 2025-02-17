@@ -37,14 +37,12 @@ jobs:
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY_BACKEND
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY_FRONTEND
 
-      # Build and push backend Docker image
       - name: Build and Push Backend Docker Image
         run: |
           docker build -t backend ./backend
           docker tag backend:latest $ECR_REPOSITORY_BACKEND:latest
           docker push $ECR_REPOSITORY_BACKEND:latest
 
-      # Build and push frontend Docker image
       - name: Build and Push Frontend Docker Image
         run: |
           docker build -t frontend ./client
@@ -65,23 +63,17 @@ jobs:
         run: |
           eb init -p docker $ELASTIC_BEANSTALK_APPLICATION --region $AWS_REGION
 
-      - name: Create New Application Version
-        run: |
-          zip -r deploy.zip docker-compose.yml
-          aws elasticbeanstalk create-application-version --application-name $ELASTIC_BEANSTALK_APPLICATION \
-            --version-label "$VERSION_LABEL" \
-            --source-bundle S3Bucket="elasticbeanstalk-$AWS_REGION-$AWS_ACCOUNT_ID",S3Key="deploy.zip"
-
       - name: Set Environment Variables in Elastic Beanstalk
         run: |
-          echo '[
-            {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "AWS_ACCESS_KEY_ID", "Value": "${{ secrets.AWS_ACCESS_KEY_ID }}"},
-            {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "AWS_SECRET_ACCESS_KEY", "Value": "${{ secrets.AWS_SECRET_ACCESS_KEY }}"}
-          ]' > env-config.json
-
           aws elasticbeanstalk update-environment --application-name $ELASTIC_BEANSTALK_APPLICATION \
             --environment-name $ELASTIC_BEANSTALK_ENVIRONMENT \
-            --option-settings file://env-config.json
+            --option-settings file://<(cat <<EOF
+          [
+            {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "AWS_ACCESS_KEY_ID", "Value": "${{ secrets.AWS_ACCESS_KEY_ID }}"},
+            {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "AWS_SECRET_ACCESS_KEY", "Value": "${{ secrets.AWS_SECRET_ACCESS_KEY }}"}
+          ]
+          EOF
+          )
 
       - name: Deploy to AWS Elastic Beanstalk
         run: |
