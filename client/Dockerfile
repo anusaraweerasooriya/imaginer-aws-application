@@ -1,29 +1,29 @@
-# Use a full Node.js image instead of Alpine (Alpine lacks some required dependencies)
+# Use Node.js base image
 FROM node:18
 
-# Set the working directory in the container
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install required system dependencies (for building Next.js)
+# Install required dependencies
 RUN apt-get update && apt-get install -y python3 make g++
 
-# Install dependencies cleanly without cache
-RUN npm ci --production
+# Install dependencies, ensuring Next.js is installed
+RUN npm install
 
-# Copy all source files to the working directory
-COPY . .
-
-# Ensure next is installed
+# Manually verify Next.js is installed
 RUN npx next --version
+
+# Copy all source files
+COPY . .
 
 # Build the Next.js application
 RUN npm run build
 
-# Expose the port your app runs on
+# Expose the port
 EXPOSE 3000
 
-# Define the command to run your app
+# Start the application
 CMD [ "npm", "start" ]
