@@ -1,15 +1,11 @@
-FROM node:18-alpine 
+FROM node:18-alpine
+WORKDIR /app
 
-WORKDIR /app 
-
-COPY package.json package-lock.json ./ 
-
-RUN npm install  # Install all dependencies, including Next.js
-
-COPY . . 
-
+COPY package*.json ./
 RUN npm install
 
-EXPOSE 3000 
+COPY . .
 
-CMD ["npm", "run", "start"]
+RUN npm run build
+
+CMD npm start
