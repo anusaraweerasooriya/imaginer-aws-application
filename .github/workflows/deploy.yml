@@ -22,11 +22,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Generate a version label (used for tracking deployments)
       - name: Generate Version Label
         run: echo "VERSION_LABEL=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
-      # Configure AWS credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -34,44 +32,57 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # Login to AWS ECR
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY_BACKEND
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY_FRONTEND
 
-      # Build and push backend Docker image
       - name: Build and Push Backend Docker Image
         run: |
           docker build -t backend ./backend
           docker tag backend:latest $ECR_REPOSITORY_BACKEND:latest
           docker push $ECR_REPOSITORY_BACKEND:latest
 
-      # Build and push frontend Docker image
       - name: Build and Push Frontend Docker Image
         run: |
           docker build -t frontend ./client
           docker tag frontend:latest $ECR_REPOSITORY_FRONTEND:latest
           docker push $ECR_REPOSITORY_FRONTEND:latest
 
-      # Replace placeholders in `docker-compose.yml` with actual ECR URLs
       - name: Update Image References in docker-compose.yml
         run: |
-          sed -i "s|backend|$ECR_REPOSITORY_BACKEND:latest|g" docker-compose.yml
-          sed -i "s|frontend|$ECR_REPOSITORY_FRONTEND:latest|g" docker-compose.yml
+          sed -i "s|image: backend|image: $ECR_REPOSITORY_BACKEND:latest|g" docker-compose.yml
+          sed -i "s|image: frontend|image: $ECR_REPOSITORY_FRONTEND:latest|g" docker-compose.yml
 
-      # Install AWS Elastic Beanstalk CLI
       - name: Install Elastic Beanstalk CLI
         run: |
           pip install --upgrade pip
           pip install awsebcli
 
-      # Initialize Elastic Beanstalk (if not already initialized)
       - name: Initialize Elastic Beanstalk Application
         run: |
           eb init -p docker $ELASTIC_BEANSTALK_APPLICATION --region $AWS_REGION
 
-      # Deploy to Elastic Beanstalk
+      - name: Create New Application Version
+        run: |
+          aws elasticbeanstalk create-application-version --application-name $ELASTIC_BEANSTALK_APPLICATION \
+            --version-label "$VERSION_LABEL" \
+            --source-bundle S3Bucket="elasticbeanstalk-$AWS_REGION-$AWS_ACCOUNT_ID",S3Key="$VERSION_LABEL.zip"
+
+      - name: Set Environment Variables in Elastic Beanstalk
+        run: |
+          aws elasticbeanstalk update-environment --application-name $ELASTIC_BEANSTALK_APPLICATION \
+            --environment-name $ELASTIC_BEANSTALK_ENVIRONMENT \
+            --option-settings file://<(cat <<EOF
+          [
+            {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "AWS_ACCESS_KEY_ID", "Value": "${{ secrets.AWS_ACCESS_KEY_ID }}"},
+            {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "AWS_SECRET_ACCESS_KEY", "Value": "${{ secrets.AWS_SECRET_ACCESS_KEY }}"},
+            {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "AWS_S3_BUCKET_NAME", "Value": "${{ secrets.AWS_S3_BUCKET_NAME }}"},
+            {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "AWS_S3_REGION", "Value": "${{ secrets.AWS_S3_REGION }}"}
+          ]
+          EOF
+          )
+
       - name: Deploy to AWS Elastic Beanstalk
         run: |
           eb deploy $ELASTIC_BEANSTALK_ENVIRONMENT --timeout 30
