@@ -11,7 +11,6 @@ env:
   ECR_REPOSITORY_FRONTEND: ${{ secrets.ECR_REPOSITORY_FRONTEND }}
   ELASTIC_BEANSTALK_ENVIRONMENT: ${{ secrets.ELASTIC_BEANSTALK_ENVIRONMENT }}
   ELASTIC_BEANSTALK_APPLICATION: ${{ secrets.ELASTIC_BEANSTALK_APPLICATION }}
-  S3_BUCKET: ${{ secrets.ELASTIC_BEANSTALK_S3_BUCKET }}
 
 jobs:
   deploy:
@@ -50,21 +49,17 @@ jobs:
           docker tag frontend:latest $ECR_REPOSITORY_FRONTEND:latest
           docker push $ECR_REPOSITORY_FRONTEND:latest
 
-      # Create application version in Elastic Beanstalk
+      # Create a new application version in Elastic Beanstalk (without S3)
       - name: Create Elastic Beanstalk application version
         run: |
           VERSION_LABEL=$(date +'%Y%m%d%H%M%S')
           echo "VERSION_LABEL=$VERSION_LABEL" >> $GITHUB_ENV
           
-          # Package and upload application version to S3
-          zip -r deploy.zip Dockerfile .ebextensions/  # Ensure all necessary files are included
-          aws s3 cp deploy.zip s3://$S3_BUCKET/deploy-$VERSION_LABEL.zip
-          
-          # Create application version in Elastic Beanstalk
+          # Create the application version directly
           aws elasticbeanstalk create-application-version \
             --application-name $ELASTIC_BEANSTALK_APPLICATION \
             --version-label $VERSION_LABEL \
-            --source-bundle S3Bucket=$S3_BUCKET,S3Key=deploy-$VERSION_LABEL.zip
+            --source-bundle "Dockerfile"
 
       # Deploy to AWS Elastic Beanstalk
       - name: Deploy to AWS Elastic Beanstalk
