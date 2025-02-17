@@ -10,8 +10,8 @@ COPY package*.json ./
 # Install required dependencies
 RUN apt-get update && apt-get install -y python3 make g++
 
-# Install dependencies, ensuring Next.js is installed
-RUN npm install
+# Install dependencies with --legacy-peer-deps to prevent conflicts
+RUN npm install --legacy-peer-deps
 
 # Manually verify Next.js is installed
 RUN npx next --version
