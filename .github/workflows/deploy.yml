@@ -1,9 +1,10 @@
-name: Deploy to AWS Elastic Beanstalk
+name: CI/CD for AWS Elastic Beanstalk (Without S3 Bucket)
 
 on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -11,47 +12,78 @@ env:
   ECR_REPOSITORY_FRONTEND: ${{ secrets.ECR_REPOSITORY_FRONTEND }}
   ELASTIC_BEANSTALK_ENVIRONMENT: ${{ secrets.ELASTIC_BEANSTALK_ENVIRONMENT }}
   ELASTIC_BEANSTALK_APPLICATION: ${{ secrets.ELASTIC_BEANSTALK_APPLICATION }}
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
 jobs:
   deploy:
-    name: Deploy to AWS Elastic Beanstalk
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Authenticate with AWS
-      - name: Configure AWS credentials
+      - name: Generate Version Label
+        run: echo "VERSION_LABEL=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # Login to AWS ECR
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY_BACKEND
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY_FRONTEND
 
-      # Build and push backend Docker image
-      - name: Build and push Backend Docker image
+      - name: Build and Push Backend Docker Image
         run: |
           docker build -t backend ./backend
           docker tag backend:latest $ECR_REPOSITORY_BACKEND:latest
           docker push $ECR_REPOSITORY_BACKEND:latest
 
-      # Build and push frontend Docker image
-      - name: Build and push Frontend Docker image
+      - name: Build and Push Frontend Docker Image
         run: |
           docker build -t frontend ./client
           docker tag frontend:latest $ECR_REPOSITORY_FRONTEND:latest
           docker push $ECR_REPOSITORY_FRONTEND:latest
 
-      # Deploy to AWS Elastic Beanstalk
-      - name: Deploy to AWS Elastic Beanstalk
+      - name: Update Image References in docker-compose.yml
+        run: |
+          sed -i "s|image: backend|image: $ECR_REPOSITORY_BACKEND:latest|g" docker-compose.yml
+          sed -i "s|image: frontend|image: $ECR_REPOSITORY_FRONTEND:latest|g" docker-compose.yml
+
+      - name: Install Elastic Beanstalk CLI
+        run: |
+          pip install --upgrade pip
+          pip install awsebcli
+
+      - name: Initialize Elastic Beanstalk Application
+        run: |
+          eb init -p docker $ELASTIC_BEANSTALK_APPLICATION --region $AWS_REGION
+
+      - name: Set Environment Variables in Elastic Beanstalk
         run: |
           aws elasticbeanstalk update-environment --application-name $ELASTIC_BEANSTALK_APPLICATION \
             --environment-name $ELASTIC_BEANSTALK_ENVIRONMENT \
-            --version-label "$(date +'%Y%m%d%H%M%S')"
+            --option-settings file://<(cat <<EOF
+          [
+            {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "AWS_ACCESS_KEY_ID", "Value": "${{ secrets.AWS_ACCESS_KEY_ID }}"},
+            {"Namespace": "aws:elasticbeanstalk:application:environment", "OptionName": "AWS_SECRET_ACCESS_KEY", "Value": "${{ secrets.AWS_SECRET_ACCESS_KEY }}"}
+          ]
+          EOF
+          )
+
+      - name: Wait for Environment to be Ready
+        run: |
+          STATUS=$(aws elasticbeanstalk describe-environments --application-name $ELASTIC_BEANSTALK_APPLICATION --environment-names $ELASTIC_BEANSTALK_ENVIRONMENT --query 'Environments[0].Status' --output text)
+          while [ "$STATUS" != "Ready" ]; do
+            echo "Waiting for environment to be Ready. Current status: $STATUS"
+            sleep 30
+            STATUS=$(aws elasticbeanstalk describe-environments --application-name $ELASTIC_BEANSTALK_APPLICATION --environment-names $ELASTIC_BEANSTALK_ENVIRONMENT --query 'Environments[0].Status' --output text)
+          done
+
+      - name: Deploy to AWS Elastic Beanstalk
+        run: |
+          eb deploy $ELASTIC_BEANSTALK_ENVIRONMENT --timeout 30
