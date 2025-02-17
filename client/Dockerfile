@@ -1,26 +1,15 @@
-# Use an official lightweight Node.js image
 FROM node:18-alpine 
 
-# Set working directory
 WORKDIR /app 
 
-# Copy package.json and package-lock.json first (for caching)
 COPY package.json package-lock.json ./ 
 
-# Install all dependencies (including dev dependencies)
-RUN npm install 
+RUN npm install  # Install all dependencies, including Next.js
 
-# Copy the entire project to the container
 COPY . . 
 
-# Ensure Next.js is installed before running the build
-RUN npm install next 
+RUN npm run build  # Build Next.js app
 
-# Build the Next.js application
-RUN npm run build 
-
-# Expose the required port
 EXPOSE 3000 
 
-# Start the Next.js application in production mode
 CMD ["npm", "run", "start"]
