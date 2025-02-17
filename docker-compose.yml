@@ -6,13 +6,13 @@ services:
     ports:
       - "9090:9090"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod  # Ensure your application uses the correct profile
+      - SPRING_PROFILES_ACTIVE=prod  
 
   frontend:
     build: ./client
     ports:
-      - "3000:3000"
+      - "80:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://backend:9090  # Make frontend use backend service name
+      - NEXT_PUBLIC_API_URL=http://backend:9090
     depends_on:
-      - backend  # Only frontend depends on backend (No circular dependency)
+      - backend
