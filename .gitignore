@@ -28,7 +28,6 @@ yarn-error.log*
 pnpm-debug.log*
 debug.log
 npm-debug.log*
-lerna-debug.log*
 
 # Dependencies
 /node_modules
