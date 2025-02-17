@@ -34,6 +34,7 @@ export default function UploadImage({ onUploadSuccess }: UploadImageProps) {
 
       // Trigger the callback to fetch updated images
       onUploadSuccess();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setMessage("Upload failed. Please try again.");
     } finally {
