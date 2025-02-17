@@ -1,5 +1,5 @@
-# Use Node.js base image
-FROM node:18
+# Use a stable Node.js version (avoid Alpine to prevent npm crashes)
+FROM node:18-bullseye
 
 # Set working directory
 WORKDIR /app
@@ -7,16 +7,16 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install required dependencies
-RUN apt-get update && apt-get install -y python3 make g++
+# Ensure npm is upgraded and clean before installing dependencies
+RUN npm install -g npm@latest && npm cache clean --force
 
-# Install dependencies with --legacy-peer-deps to prevent conflicts
-RUN npm install --legacy-peer-deps
+# Install dependencies with better error handling
+RUN npm install --omit=dev || npm install --omit=dev || (npm cache clean --force && npm install --omit=dev)
 
-# Manually verify Next.js is installed
+# Manually verify Next.js installation
 RUN npx next --version
 
-# Copy all source files
+# Copy all source files after installing dependencies
 COPY . .
 
 # Build the Next.js application
