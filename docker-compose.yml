@@ -6,13 +6,23 @@ services:
     ports:
       - "9090:9090"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod  
+      - SPRING_PROFILES_ACTIVE=prod
+      - SERVER_PORT=9090
+      - SERVER_ADDRESS=0.0.0.0  # Important to bind to all interfaces
+    networks:
+      - app-network  # Use an explicit network for communication
 
   frontend:
     build: ./client
     ports:
-      - "80:3000"
+      - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://backend:9090
+      - NEXT_PUBLIC_API_URL=http://backend:9090  # Communicate via service name
     depends_on:
       - backend
+    networks:
+      - app-network  # Join the same network
+
+networks:
+  app-network:
+    driver: bridge
