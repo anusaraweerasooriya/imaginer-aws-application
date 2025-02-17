@@ -3,8 +3,7 @@ name: Deploy to AWS Elastic Beanstalk
 on:
   push:
     branches:
-      - main  # Change if using another branch for deployment
-
+      - master
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   ECR_REPOSITORY_BACKEND: ${{ secrets.ECR_REPOSITORY_BACKEND }}
