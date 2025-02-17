@@ -9,6 +9,8 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=9090
       - SERVER_ADDRESS=0.0.0.0  # Important to bind to all interfaces
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     networks:
       - app-network  # Use an explicit network for communication
 
