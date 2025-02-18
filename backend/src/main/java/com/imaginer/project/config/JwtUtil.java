@@ -15,7 +15,7 @@ import java.security.Key;
 @Component
 public class JwtUtil
 {
-  private final String SECRET_KEY = "abcdefghijklmnopqrstuvwxyz012345"; // Must be 32+ chars
+  private final String SECRET_KEY = "abcdefghijklmnopqrstuvwxyz012345";
   private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
   public String generateToken(String username)

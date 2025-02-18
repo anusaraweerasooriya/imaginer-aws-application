@@ -35,7 +35,7 @@ public class SecurityConfig {
   @Bean
   public UserDetailsService userDetailsService(UserRepository userRepository) {
     return username -> userRepository.findByUsername(username)
-      .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
   }
 
   @Bean
@@ -54,15 +54,14 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-      .cors().and()  // ✅ Enable CORS
-      .csrf().disable()
-      .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/api/auth/**").permitAll()
-        .anyRequest().authenticated()
-      )
-      .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-      .and()
-      .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        .cors().and() 
+        .csrf().disable()
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/auth/**").permitAll()
+            .anyRequest().authenticated())
+        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .and()
+        .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
@@ -70,8 +69,9 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(Arrays.asList("http://imaginer-frontend.eu-north-1.elasticbeanstalk.com"));
-    configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+    configuration.setAllowedOrigins(Arrays.asList(
+        "http://imaginer-frontend.eu-north-1.elasticbeanstalk.com",
+        "http://localhost:3000"));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
     configuration.setAllowCredentials(true);
