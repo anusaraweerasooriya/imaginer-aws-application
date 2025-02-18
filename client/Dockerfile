@@ -1,29 +1,23 @@
-# Use Node.js 20 (Compatible with npm 11)
-FROM node:20-bullseye
+# Use an official Node.js runtime as the base image
+FROM node:18-alpine
 
-# Set working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Ensure npm is upgraded and clean before installing dependencies
-RUN npm install -g npm@latest && npm cache clean --force
+# Install project dependencies
+RUN npm install --production
 
-# Install dependencies with better error handling
-RUN npm install --omit=dev || npm install --omit=dev || (npm cache clean --force && npm install --omit=dev)
-
-# Manually verify Next.js installation
-RUN npx next --version
-
-# Copy all source files
+# Copy all source files to the working directory
 COPY . .
 
 # Build the Next.js application
 RUN npm run build
 
-# Expose the port
+# Expose the port your app runs on
 EXPOSE 3000
 
-# Start the application
+# Define the command to run your app
 CMD [ "npm", "start" ]
