@@ -1,6 +1,5 @@
 # Node.js (Frontend - Next.js)
 node_modules/
-.next/
 out/
 .cache/
 *.log
@@ -39,7 +38,6 @@ npm-debug.log*
 *.lcov
 
 # Build output
-/.next
 out
 dist
 

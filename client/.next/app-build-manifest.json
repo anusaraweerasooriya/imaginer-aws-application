@@ -1,0 +1,52 @@
+{
+  "pages": {
+    "/_not-found/page": [
+      "static/chunks/webpack-7d527d768d667d71.js",
+      "static/chunks/4bd1b696-19c2ffabd7bdcdcb.js",
+      "static/chunks/517-9d6455b549f145f4.js",
+      "static/chunks/main-app-569fce3c97ba5419.js",
+      "static/chunks/app/_not-found/page-f5a1c92cb9ad1349.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack-7d527d768d667d71.js",
+      "static/chunks/4bd1b696-19c2ffabd7bdcdcb.js",
+      "static/chunks/517-9d6455b549f145f4.js",
+      "static/chunks/main-app-569fce3c97ba5419.js",
+      "static/css/97f5aec312142207.css",
+      "static/chunks/238-9a40e401a36832e0.js",
+      "static/chunks/app/layout-01c6347fe57bd18b.js"
+    ],
+    "/auth/login/page": [
+      "static/chunks/webpack-7d527d768d667d71.js",
+      "static/chunks/4bd1b696-19c2ffabd7bdcdcb.js",
+      "static/chunks/517-9d6455b549f145f4.js",
+      "static/chunks/main-app-569fce3c97ba5419.js",
+      "static/chunks/238-9a40e401a36832e0.js",
+      "static/chunks/app/auth/login/page-e4bd7672ef3791ea.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-7d527d768d667d71.js",
+      "static/chunks/4bd1b696-19c2ffabd7bdcdcb.js",
+      "static/chunks/517-9d6455b549f145f4.js",
+      "static/chunks/main-app-569fce3c97ba5419.js",
+      "static/chunks/238-9a40e401a36832e0.js",
+      "static/chunks/app/page-7eaf603fcd594dfc.js"
+    ],
+    "/auth/register/page": [
+      "static/chunks/webpack-7d527d768d667d71.js",
+      "static/chunks/4bd1b696-19c2ffabd7bdcdcb.js",
+      "static/chunks/517-9d6455b549f145f4.js",
+      "static/chunks/main-app-569fce3c97ba5419.js",
+      "static/chunks/238-9a40e401a36832e0.js",
+      "static/chunks/app/auth/register/page-722ae42746ead2ba.js"
+    ],
+    "/profile/page": [
+      "static/chunks/webpack-7d527d768d667d71.js",
+      "static/chunks/4bd1b696-19c2ffabd7bdcdcb.js",
+      "static/chunks/517-9d6455b549f145f4.js",
+      "static/chunks/main-app-569fce3c97ba5419.js",
+      "static/chunks/238-9a40e401a36832e0.js",
+      "static/chunks/app/profile/page-15003ec4ce11f60f.js"
+    ]
+  }
+}
