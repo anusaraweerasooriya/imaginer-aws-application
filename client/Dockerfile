@@ -7,14 +7,17 @@ WORKDIR /app
 # Install required system dependencies
 RUN apk add --no-cache python3 make g++
 
-# Copy only necessary files (avoid overwriting pre-built `.next` folder)
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install only production dependencies
+# Install only production dependencies (to avoid unnecessary files)
 RUN npm install --production
 
-# Copy all source files EXCEPT the `.next` folder
-COPY . . 
+# Copy all source files EXCEPT .next (since we will copy it separately)
+COPY . .
+
+# Ensure Next.js is installed
+RUN npx next --version
 
 # Copy the pre-built Next.js build folder from local machine
 COPY .next .next
@@ -23,4 +26,4 @@ COPY .next .next
 EXPOSE 3000
 
 # Run the Next.js app in production mode
-CMD [ "npx", "next", "start" ]
+CMD ["npx", "next", "start"]
