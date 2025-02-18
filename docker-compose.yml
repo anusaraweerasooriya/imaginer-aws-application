@@ -8,22 +8,22 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=9090
-      - SERVER_ADDRESS=0.0.0.0  # Important to bind to all interfaces
+      - SERVER_ADDRESS=0.0.0.0
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     networks:
-      - app-network  # Use an explicit network for communication
+      - app-network
 
   frontend:
     build: ./client
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://backend:9090  # Communicate via service name
+      - NEXT_PUBLIC_API_URL=http://backend:9090
     depends_on:
       - backend
     networks:
-      - app-network  # Join the same network
+      - app-network
 
 networks:
   app-network:
