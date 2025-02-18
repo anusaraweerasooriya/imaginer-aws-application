@@ -10,6 +10,7 @@ import com.imaginer.project.service.S3Service;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/uploads")
+@CrossOrigin(origins = "http://imaginer-frontend.eu-north-1.elasticbeanstalk.com")
 public class FileUploadController {
 
   private final S3Service s3Service;
@@ -33,16 +35,15 @@ public class FileUploadController {
 
   @PostMapping("/image")
   public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file,
-                                            @AuthenticationPrincipal UserDetails userDetails) {
+      @AuthenticationPrincipal UserDetails userDetails) {
     try {
       User user = userRepository.findByUsername(userDetails.getUsername())
-        .orElseThrow(() -> new RuntimeException("User not found"));
+          .orElseThrow(() -> new RuntimeException("User not found"));
 
       String imageUrl = s3Service.uploadFile(
-        file.getInputStream(),
-        file.getOriginalFilename(),
-        file.getContentType()
-      );
+          file.getInputStream(),
+          file.getOriginalFilename(),
+          file.getContentType());
 
       Image image = new Image();
       image.setImageUrl(imageUrl);
@@ -58,7 +59,7 @@ public class FileUploadController {
   @GetMapping("/user-images")
   public ResponseEntity<?> getUserImages(@AuthenticationPrincipal UserDetails userDetails) {
     User user = userRepository.findByUsername(userDetails.getUsername())
-      .orElseThrow(() -> new RuntimeException("User not found"));
+        .orElseThrow(() -> new RuntimeException("User not found"));
 
     return ResponseEntity.ok(imageRepository.findByUser(user));
   }

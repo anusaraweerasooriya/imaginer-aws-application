@@ -40,7 +40,6 @@ public class S3Service
 
   public String uploadFile(InputStream inputStream, String originalFilename, String contentType) {
     try {
-      // Convert InputStream to byte array to determine the content length
       byte[] bytes = inputStream.readAllBytes();
       long contentLength = bytes.length;
 
@@ -48,10 +47,8 @@ public class S3Service
         throw new IllegalArgumentException("File content is empty or invalid");
       }
 
-      // Generate a unique file name
       String uniqueFileName = UUID.randomUUID() + "-" + originalFilename;
 
-      // Prepare the request WITHOUT ACL
       PutObjectRequest putObjectRequest = PutObjectRequest
         .builder()
         .bucket(bucketName)
@@ -60,7 +57,6 @@ public class S3Service
         .build();
 
 
-      // Upload to S3
       s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(bytes));
 
       return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, uniqueFileName);
