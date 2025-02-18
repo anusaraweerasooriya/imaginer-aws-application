@@ -39,7 +39,7 @@ jobs:
 
       - name: Build and Push Backend Docker Image
         run: |
-          docker build -t backend ./backend
+          docker build --no-cache -t frontend ./client
           docker tag backend:latest $ECR_REPOSITORY_BACKEND:latest
           docker push $ECR_REPOSITORY_BACKEND:latest
 
