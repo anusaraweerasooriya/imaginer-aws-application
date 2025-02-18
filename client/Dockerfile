@@ -1,5 +1,5 @@
-# Use a stable Node.js version (avoid Alpine to prevent npm crashes)
-FROM node:18-bullseye
+# Use Node.js 20 (Compatible with npm 11)
+FROM node:20-bullseye
 
 # Set working directory
 WORKDIR /app
@@ -16,7 +16,7 @@ RUN npm install --omit=dev || npm install --omit=dev || (npm cache clean --force
 # Manually verify Next.js installation
 RUN npx next --version
 
-# Copy all source files after installing dependencies
+# Copy all source files
 COPY . .
 
 # Build the Next.js application
