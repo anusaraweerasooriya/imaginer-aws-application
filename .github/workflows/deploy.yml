@@ -1,4 +1,4 @@
-name: CI/CD for AWS Elastic Beanstalk (Without S3 Bucket)
+name: CI/CD for AWS Elastic Beanstalk
 
 on:
   push:
